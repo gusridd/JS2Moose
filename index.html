@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>Esprima</title>
+
+	<script src="jquery-1.9.1.js"></script>
+	<script src="esprima.js"></script>
+	<script src="escodegen.browser.js"></script>
+	<script src="esmorph.js"></script>
+
+	<script type="text/javascript" src="FAMIX.js"></script>
+
+	<style type="text/css">
+		textarea{
+			width: 500px;
+			height: 300px;
+		}
+		.inline{
+			display: inline-block;
+		}
+	</style>
+</head>
+
+<body>
+
+	<h1>Esprima</h1>
+
+	<div class="inline">
+		<textarea id="input">
+var console = console || {};
+
+var Shape = function Shape(x,y){
+	var x = x
+	   ,y = y;
+
+	this.getX = function getX(){
+		return x;
+	};
+
+	this.getY = function getY(){
+		return y;
+	};
+
+	this.setX = function setX(n_x){
+		x = n_x;
+	};
+
+	this.setY = function setY(n_y){
+		y = n_y;
+	};
+}
+
+var gX = function getX(){
+   return 3;
+};
+function aFunction(x,y){
+	return new Shape(x,y);
+}
+
+var s = new Shape(1,2);
+
+sha = new Shape(3,4);
+
+console.log(s.getX());
+
+var functionA = function functionA(){
+	var some = 4
+	return 4 + some;
+};
+
+var functionB = function functionB(){
+	return functionA();
+};
+
+var anon = function(){
+	var a = functionB();
+	return functionA() + a;
+}
+
+var functionC = function functionC(){
+	return s.getX();
+}
+		</textarea>
+	</div>
+	
+	<button id="parse">Parse!</button>
+	<button id="getmse">getMSE</button>
+
+	<div class="inline">
+		<div id="tree">
+
+		</div>
+
+		<div>
+			<code id="output">
+
+			</code>
+		</div>
+
+
+
+		<h2>Summary</h2>
+		<ul id="function_names">
+
+		</ul>
+
+		<textarea id="mse_content"></textarea>
+	</div>
+
+	
+	
+
+	<script type="text/javascript">
+
+	var functions = [];
+
+	var collect = function collect(obj, predicate){
+		var list = [];
+		if(typeof obj === 'object'){
+			if(predicate(obj)){
+				list.push(obj);
+			}
+			for(var key in obj){
+				var value = obj[key];
+				var other_list = collect(value, predicate);
+				list = list.concat(other_list);
+			}
+		} 
+		return list;
+	};
+
+	var pred_is_a = function pred_is_a(obj, typeName){
+		if(obj === null || obj.type === undefined){
+			return false;
+		} else if(obj.type === typeName){
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	var pred_IsFunctionExpression = function pred_IsFunctionExpression(obj){
+		return pred_is_a(obj,'FunctionExpression');
+	};
+
+	var pred_IsFunctionDeclaration = function pred_IsFunctionDeclaration(obj){
+		return pred_is_a(obj,'FunctionDeclaration');
+	};
+
+	var pred_IsFunction = function pred_IsFunction(obj){
+		return pred_IsFunctionDeclaration(obj) || pred_IsFunctionExpression(obj);
+	}
+
+	var pred_IsCallExpression = function pred_IsCallExpression(obj){
+		return pred_is_a(obj,'CallExpression');
+	};
+
+	var pred_IsIfStatement = function pred_IsIfStatement(obj){
+		return pred_is_a(obj,'IfStatement');
+	};
+
+	var pred_IsMemberCallExpression = function pred_IsMemberCallExpression(obj){
+		return pred_is_a(obj,'CallExpression') && pred_is_a(obj.callee, 'MemberExpression');
+	}
+
+	var pred_isVariableDeclarator = function pred_isVariableDeclarator(obj){
+		return pred_is_a(obj,'VariableDeclarator');
+	}
+
+	var pred_isVariableDeclaration = function pred_isVariableDeclaration(obj){
+		return pred_is_a(obj,'VariableDeclaration');
+	}
+
+	var pred_isVariableDeclarator = function pred_isVariableDeclarator(obj){
+		return pred_is_a(obj,'VariableDeclarator');
+	}
+
+	var getFunctions = function getFunctions(AST){
+		return collect(AST, pred_IsFunction);
+	}
+
+	var getFunctionCalls = function getFunctionCalls(functionAST){
+		return collect(functionAST, pred_IsCallExpression);
+	}
+
+	var getVariableDeclaration = function getVariableDeclaration(AST){
+		return collect(AST, pred_isVariableDeclaration);
+	}
+
+	var getVariableDeclarator = function getVariableDeclarator(AST){
+		// console.log(AST);
+		return collect(AST, pred_isVariableDeclarator);
+	}
+
+	var getMemberCall = function getMemberCall(functionAST){
+		var getCallee = function getCallee(o){
+			return o.callee;
+		};
+		return map(collect(functionAST, pred_IsMemberCallExpression), getCallee);
+	}
+
+	/**
+	* Each VariableDeclaration can have more than one declaration separated by comma so a pickup must be made
+	**/
+	var getVarDeclarations = function getVarDeclarations(AST){
+		var variable_declarations = [];
+		// Obtain the corresponding AST nodes
+		var arr = getVariableDeclaration(AST);
+		// Pickup each declaration
+		$.each(arr, function(index,el){
+			variable_declarations = variable_declarations.concat(el.declarations);
+		});
+		return variable_declarations;
+
+	}
+
+
+	/**
+		function for getting a function sender, if none window is assumed
+	**/
+	var getSender = function getSender(AST, functionAST){
+
+		var does_call_funcionAST = function does_call_funcionAST(element){
+			var body = element.body;
+			for(var line in body){
+				var statement = body[line];
+				var collection = collect(statement, function(e){
+					return e == functionAST;
+				});
+				if(collection.length > 0){
+					return true;
+				}
+				// console.log(collection);
+			}
+			return false;
+		}
+		var res = functions.filter(does_call_funcionAST);
+		// console.log(res);
+		if(res.length != 0){
+			return res[res.length-1];
+		} else{
+			return {id:{name:'window'}};
+		} 
+	}
+
+	var f_functions = [];
+	var f_global_variables = [];
+	var f_invocations = [];
+
+	f_functions.push(famix_window);
+
+	var new_collect = function new_collect(AST, context){
+		var obj = AST;
+		if(typeof AST === 'object'){
+			for(var key in obj){
+				var value = obj[key];
+				if(pred_IsFunction(value)){
+					// Fix for anonymous functions
+					var name = "$"+value.loc.start.line+"_"+value.loc.start.column;
+					if(value.id != null){
+						name = value.id.name;
+					}
+					var f = new FAMIX_FUNCTION(name);
+					f.context = context;
+					f.LOC = value.range[1] - value.range[0] + 1;
+					f.statements = value.body.body.length;
+					f.params = value.params.map(function(e){
+						return e.name;
+					});
+					f_functions.push(f);
+
+					// If a local function declaration is made, it must be added to the context static_scope_functions
+					if(pred_IsFunctionDeclaration(value)){
+						context.static_scope_functions[f.name] = f;
+					}
+					// Static scope variables is inherited
+					f.static_scope_variables = context.static_scope_variables;
+
+					// Statis scope functions is inherited
+					f.static_scope_functions = context.static_scope_functions;
+
+					new_collect(value,f);
+
+				} else if (pred_IsCallExpression(value)){
+					var f = new FAMIX_INVOCATION();
+					f.candidates = [];
+					f.sender = context;
+					// It's like an object message call
+					if(value.callee.type == 'MemberExpression'){
+						f.signature = value.callee.property.name;
+						f.receiver = context.static_scope_variables[value.callee.object.name];
+					// This is just a simple function call	
+					} else if (value.callee.type == 'Identifier'){
+						f.signature = value.callee.name;
+						f.receiver = context;
+					} else if(value.callee.type == 'FunctionExpression'){
+
+					} else if(value.callee.type == 'NewExpression'){
+
+					} else if(value.callee.type == 'LogicalExpression'){
+
+					} else if(value.callee.type == 'ConditionalExpression'){
+
+					} else {
+						// console.log(value);
+						//throw "value.callee.type unknown " +value.loc.start.line + ":" + value.loc.start.column + " " + value.callee.type;
+					}
+					if(typeof f.signature == 'undefined'){
+						f.signature = value.callee.object.name;
+					}
+					// In some cases the function map appears as a receiver
+					if( typeof f.signature != 'undefined' && typeof f.receiver != 'undefined' && typeof f.receiver != 'function'){
+						f_invocations.push(f);
+					}
+					new_collect(value,context);
+
+				} else if (pred_isVariableDeclaration(value)){
+					new_collect(value,context);
+				} else if (pred_isVariableDeclarator(value)){
+					var f = new FAMIX_GLOBAL_VAR(value.id.name);
+					if(value.id.name != 'length'){
+						context.static_scope_variables[value.id.name] = f
+					} else {
+						context.static_scope_variables['$length'] = f
+					}
+					
+					f_global_variables.push(f);
+					new_collect(value,context);
+				} else {
+					new_collect(value,context);
+				}
+			}
+		} 
+		return;
+	}
+
+	var new_candidates = function new_candidates(invocations, functions){
+		return invocations.map(function(invocation){
+			var candidates = functions.filter(function(fun){
+				return fun.name == invocation.signature;
+			});
+			invocation.candidates = candidates;
+			return invocation;
+		});
+	}
+
+	// This function add some name to anonymous functions. In the form $anon_fun1-50 where 1-50 is the range
+	// where the function was found
+
+	var nameAnonymousFunctions = function nameAnonymousFunctions(AST){
+		var functions = getFunctions(AST);	
+		$.each(functions, function(index,el){
+			if(el.id === null){
+				var function_new_name = "$anon_fun" + el.range[0] + "-" + el.range[1];
+				el.id = {name:function_new_name};
+			}
+		});
+	}
+	/*
+	var getMSE = function getMSE(){
+		var code = $('#input').val().trim();
+		t = esprima.parse(code, {range:true, loc:true});
+		functions = getFunctions(t);
+		nameAnonymousFunctions(t);
+		var funs = getFunctions(t);
+		// console.log(funs);
+		var member_calls = getMemberCall(t);
+		var function_calls = getFunctionCalls(t);
+		var declarators = getVarDeclarations(t);
+		console.log(declarators);
+
+		// Get all funcion declarations and create their corresponding FAMIX model instances
+		var famix_functions = funs.map(function(e){
+			var lines = e.loc.end.line - e.loc.start.line + 1;
+			var f = new FAMIX_FUNCTION();
+			f.type = 'Function'
+			f.name = (e.id === null) ? 'anon_fun' + e.range[0] + '-' + e.range[1] : e.id.name;
+			f.LOC = lines;
+			f.statements = e.body.body.length;
+			return f;
+		});
+
+		var famix_globalVariable = [];
+		famix_globalVariable.push(famix_window);
+		famix_globalVariable = famix_globalVariable.concat(declarators.map(function(e){
+			var f = new FAMIX_GLOBAL_VAR();
+			f.type = 'GlobalVariable';
+			f.name = e.id.name;
+			return f;
+		}));
+
+
+		// Get all member calls with theirs corresponding FAMIX associated with a function declaration
+		var famix_memberCalls = member_calls.map(function(e){
+			//console.log(e);
+			var f = new FAMIX_INVOCATION();
+			f.type = 'Invocation';
+			var sender = getSender(t,e);
+			// console.log(sender);
+			var receiver_name = e.object.name;
+			var receiver_arr = famix_globalVariable.filter(function(o){return o.name === receiver_name});
+			var receiver = (receiver_arr.length != 0) ? receiver_arr[0] : {id: 0};
+			// console.log(famix_functions)
+			sender = famix_functions.filter(function(famix_f){ return famix_f.name == sender.id.name });
+			// console.log(sender.length);
+			f.receiver = receiver.id;
+			f.signature = e.property.name;
+			f.sender = (sender.length != 0) ? sender[0].id : famix_window.id;
+
+
+
+			f.candidates = famix_functions.filter(function(famix_f){ return famix_f.name == e.property.name });
+			// console.log(f);
+			return f;
+		});
+
+		var famix_functionCalls = function_calls.map(function(e){
+			//if(e.loc.start.line == 269){
+				// console.log(e);
+				var sender = getSender(t,e);
+				// console.log(sender);
+				var possible_functions = famix_functions.filter(function(famix){
+					// console.log(famix.name);
+					// console.log(e.callee.name);
+					return famix.name == e.callee.name;
+				});
+				// if (possible_functions.length > 0) console.log(possible_functions);
+				sender = famix_functions.filter(function(famix_f){ return famix_f.name == sender.id.name });
+				if(possible_functions.length > 0){
+					var f = new FAMIX_INVOCATION();
+					f.type = 'Invocation';
+					f.receiver = possible_functions[0].id;
+					// console.log(f.receiver);
+					f.signature = e.callee.name;
+					f.sender = (sender != null) ? sender[0].id : famix_window.id;
+					f.candidates = possible_functions;
+					// console.log(possible_functions);
+					return f;
+				} else{
+					return null
+				}
+				
+			//}
+		});
+
+		famix_functionCalls = famix_functionCalls.filter(function(e){
+			return e != null;
+		});
+
+		console.log(famix_functionCalls);
+
+		var str = "(\n";
+		famix_functions.map(function(e){
+			str += e.toString(1);
+		});	
+		famix_memberCalls.map(function(e){
+			str += e.toString(1);
+		});	
+		famix_globalVariable.map(function(e){
+			str += e.toString(1);
+		});	
+		famix_functionCalls.map(function(e){
+			str += e.toString(1);
+		});
+		str += ')';
+		return str;
+	};*/
+
+	var getMSE = function getMSE(){
+		var code = $('#input').val().trim();
+		t = esprima.parse(code, {range:true, loc:true});
+		new_collect(t,famix_window);
+		new_candidates(f_invocations, f_functions);
+		// console.log(f_invocations);
+		var str = "(\n";
+		f_functions.map(function(e){
+			str += e.toString(1);
+		});	
+		f_invocations.map(function(e){
+			str += e.toString(1);
+		});	
+		f_global_variables.map(function(e){
+			str += e.toString(1);
+		});	
+		str += ')';
+		return str;
+	}
+
+	$(document).ready(function(){
+
+		$('#getmse').click(function(){
+			$('#mse_content').html(getMSE());
+		});
+
+		$("#parse").click(function(){
+			var code = $('#input').val().trim();
+			t = esprima.parse(code, {loc:true});
+			// $('#tree').html(JSON.stringify(t, null, 2));
+			// var regen = escodegen.generate(t);
+			// $('#output').html(regen);
+
+			var functions = getFunctions(t);
+			$function_names = $('#function_names');
+			$function_names.html('');
+			$.each(functions, function(index, element){
+				var $li = $(document.createElement('li'));
+				var $span = $(document.createElement('span'));
+				var calls = getFunctionCalls(element);
+				var $div = $(document.createElement('div'));
+				if(calls.length > 0){
+					
+					var $ul = $(document.createElement('ul'));
+					$.each(calls, function(index, el){
+						var $li = $('<li></li>');
+						$li.html(el.callee.name);
+						$ul.append($li);
+					});
+					$div.append($ul);
+					
+				} else {
+					$div.html('does not make function calls');
+				}
+				$li.append($div);
+				if(element.id == null){
+					$span.html("anonymous function");
+				} else {
+					$span.html(element.id.name);
+				}
+				$li.prepend($span);
+
+				$function_names.append($li);
+			});
+		});
+		
+	});
+	
+	</script>
+
+</body>
+</html>
