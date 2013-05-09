@@ -176,22 +176,22 @@ var functionC = function functionC(){
 		return pred_is_a(obj,'VariableDeclarator');
 	}
 
-	var getFunctions = function getFunctions(AST){
+	/*var getFunctions = function getFunctions(AST){
 		return collect(AST, pred_IsFunction);
-	}
+	}*/
 
-	var getFunctionCalls = function getFunctionCalls(functionAST){
+	/*var getFunctionCalls = function getFunctionCalls(functionAST){
 		return collect(functionAST, pred_IsCallExpression);
-	}
+	}*/
 
-	var getVariableDeclaration = function getVariableDeclaration(AST){
+	/*var getVariableDeclaration = function getVariableDeclaration(AST){
 		return collect(AST, pred_isVariableDeclaration);
-	}
+	}*/
 
-	var getVariableDeclarator = function getVariableDeclarator(AST){
+	/*var getVariableDeclarator = function getVariableDeclarator(AST){
 		// console.log(AST);
 		return collect(AST, pred_isVariableDeclarator);
-	}
+	}*/
 
 	var getMemberCall = function getMemberCall(functionAST){
 		var getCallee = function getCallee(o){
@@ -203,7 +203,7 @@ var functionC = function functionC(){
 	/**
 	* Each VariableDeclaration can have more than one declaration separated by comma so a pickup must be made
 	**/
-	var getVarDeclarations = function getVarDeclarations(AST){
+	/*var getVarDeclarations = function getVarDeclarations(AST){
 		var variable_declarations = [];
 		// Obtain the corresponding AST nodes
 		var arr = getVariableDeclaration(AST);
@@ -213,7 +213,7 @@ var functionC = function functionC(){
 		});
 		return variable_declarations;
 
-	}
+	}*/
 
 
 	/**
@@ -345,134 +345,11 @@ var functionC = function functionC(){
 		});
 	}
 
-	// This function add some name to anonymous functions. In the form $anon_fun1-50 where 1-50 is the range
-	// where the function was found
-
-	var nameAnonymousFunctions = function nameAnonymousFunctions(AST){
-		var functions = getFunctions(AST);	
-		$.each(functions, function(index,el){
-			if(el.id === null){
-				var function_new_name = "$anon_fun" + el.range[0] + "-" + el.range[1];
-				el.id = {name:function_new_name};
-			}
-		});
-	}
-	/*
-	var getMSE = function getMSE(){
-		var code = $('#input').val().trim();
-		t = esprima.parse(code, {range:true, loc:true});
-		functions = getFunctions(t);
-		nameAnonymousFunctions(t);
-		var funs = getFunctions(t);
-		// console.log(funs);
-		var member_calls = getMemberCall(t);
-		var function_calls = getFunctionCalls(t);
-		var declarators = getVarDeclarations(t);
-		console.log(declarators);
-
-		// Get all funcion declarations and create their corresponding FAMIX model instances
-		var famix_functions = funs.map(function(e){
-			var lines = e.loc.end.line - e.loc.start.line + 1;
-			var f = new FAMIX_FUNCTION();
-			f.type = 'Function'
-			f.name = (e.id === null) ? 'anon_fun' + e.range[0] + '-' + e.range[1] : e.id.name;
-			f.LOC = lines;
-			f.statements = e.body.body.length;
-			return f;
-		});
-
-		var famix_globalVariable = [];
-		famix_globalVariable.push(famix_window);
-		famix_globalVariable = famix_globalVariable.concat(declarators.map(function(e){
-			var f = new FAMIX_GLOBAL_VAR();
-			f.type = 'GlobalVariable';
-			f.name = e.id.name;
-			return f;
-		}));
-
-
-		// Get all member calls with theirs corresponding FAMIX associated with a function declaration
-		var famix_memberCalls = member_calls.map(function(e){
-			//console.log(e);
-			var f = new FAMIX_INVOCATION();
-			f.type = 'Invocation';
-			var sender = getSender(t,e);
-			// console.log(sender);
-			var receiver_name = e.object.name;
-			var receiver_arr = famix_globalVariable.filter(function(o){return o.name === receiver_name});
-			var receiver = (receiver_arr.length != 0) ? receiver_arr[0] : {id: 0};
-			// console.log(famix_functions)
-			sender = famix_functions.filter(function(famix_f){ return famix_f.name == sender.id.name });
-			// console.log(sender.length);
-			f.receiver = receiver.id;
-			f.signature = e.property.name;
-			f.sender = (sender.length != 0) ? sender[0].id : famix_window.id;
-
-
-
-			f.candidates = famix_functions.filter(function(famix_f){ return famix_f.name == e.property.name });
-			// console.log(f);
-			return f;
-		});
-
-		var famix_functionCalls = function_calls.map(function(e){
-			//if(e.loc.start.line == 269){
-				// console.log(e);
-				var sender = getSender(t,e);
-				// console.log(sender);
-				var possible_functions = famix_functions.filter(function(famix){
-					// console.log(famix.name);
-					// console.log(e.callee.name);
-					return famix.name == e.callee.name;
-				});
-				// if (possible_functions.length > 0) console.log(possible_functions);
-				sender = famix_functions.filter(function(famix_f){ return famix_f.name == sender.id.name });
-				if(possible_functions.length > 0){
-					var f = new FAMIX_INVOCATION();
-					f.type = 'Invocation';
-					f.receiver = possible_functions[0].id;
-					// console.log(f.receiver);
-					f.signature = e.callee.name;
-					f.sender = (sender != null) ? sender[0].id : famix_window.id;
-					f.candidates = possible_functions;
-					// console.log(possible_functions);
-					return f;
-				} else{
-					return null
-				}
-				
-			//}
-		});
-
-		famix_functionCalls = famix_functionCalls.filter(function(e){
-			return e != null;
-		});
-
-		console.log(famix_functionCalls);
-
-		var str = "(\n";
-		famix_functions.map(function(e){
-			str += e.toString(1);
-		});	
-		famix_memberCalls.map(function(e){
-			str += e.toString(1);
-		});	
-		famix_globalVariable.map(function(e){
-			str += e.toString(1);
-		});	
-		famix_functionCalls.map(function(e){
-			str += e.toString(1);
-		});
-		str += ')';
-		return str;
-	};*/
-
-	var getMSE = function getMSE(){
-		var code = $('#input').val().trim();
-		t = esprima.parse(code, {range:true, loc:true});
+	// This functions returns the MSE text for some JavasScript code
+	var getMSE = function getMSE(js_code){
+		t = esprima.parse(js_code, {range:true, loc:true});
 		new_collect(t,famix_window);
 		new_candidates(f_invocations, f_functions);
-		// console.log(f_invocations);
 		var str = "(\n";
 		f_functions.map(function(e){
 			str += e.toString(1);
@@ -490,47 +367,8 @@ var functionC = function functionC(){
 	$(document).ready(function(){
 
 		$('#getmse').click(function(){
-			$('#mse_content').html(getMSE());
-		});
-
-		$("#parse").click(function(){
 			var code = $('#input').val().trim();
-			t = esprima.parse(code, {loc:true});
-			// $('#tree').html(JSON.stringify(t, null, 2));
-			// var regen = escodegen.generate(t);
-			// $('#output').html(regen);
-
-			var functions = getFunctions(t);
-			$function_names = $('#function_names');
-			$function_names.html('');
-			$.each(functions, function(index, element){
-				var $li = $(document.createElement('li'));
-				var $span = $(document.createElement('span'));
-				var calls = getFunctionCalls(element);
-				var $div = $(document.createElement('div'));
-				if(calls.length > 0){
-					
-					var $ul = $(document.createElement('ul'));
-					$.each(calls, function(index, el){
-						var $li = $('<li></li>');
-						$li.html(el.callee.name);
-						$ul.append($li);
-					});
-					$div.append($ul);
-					
-				} else {
-					$div.html('does not make function calls');
-				}
-				$li.append($div);
-				if(element.id == null){
-					$span.html("anonymous function");
-				} else {
-					$span.html(element.id.name);
-				}
-				$li.prepend($span);
-
-				$function_names.append($li);
-			});
+			$('#mse_content').html(getMSE(code));
 		});
 		
 	});
