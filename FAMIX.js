@@ -55,12 +55,18 @@ var FAMIX_FUNCTION = function FAMIX_FUNCTION(name){
 		str += tab + '(numberOfComments 0)\n';
 		makeSpacing(spacing);
 		str += tab + '(numberOfConditionals -1)\n';*/
+		if(typeof this.context != 'undefined'){
+			str = this.makeSpacing(str, spacing);
+			str += tab + '(parentScope (ref: ' + this.context.id + ')\n'
+		}
 		str = this.makeSpacing(str, spacing);
 		str += tab + '(numberOfLinesOfCode ' + this.LOC + ')\n';
 		str = this.makeSpacing(str, spacing);
 		str += tab + '(numberOfStatements ' + this.statements + '))\n';
 		/*makeSpacing(spacing);
 		str += tab + '(numberOfParameters -1))\n';*/
+		
+		
 		return str;
 	};
 
