@@ -57,7 +57,7 @@ var FAMIX_FUNCTION = function FAMIX_FUNCTION(name){
 		str += tab + '(numberOfConditionals -1)\n';*/
 		if(typeof this.context != 'undefined'){
 			str = this.makeSpacing(str, spacing);
-			str += tab + '(parentScope (ref: ' + this.context.id + ')\n'
+			str += tab + '(parentScope (ref: ' + this.context.id + '))\n'
 		}
 		str = this.makeSpacing(str, spacing);
 		str += tab + '(numberOfLinesOfCode ' + this.LOC + ')\n';
