@@ -85,7 +85,6 @@ var functionC = function functionC(){
 		</textarea>
 	</div>
 	
-	<button id="parse">Parse!</button>
 	<button id="getmse">getMSE</button>
 
 	<div class="inline">
@@ -113,10 +112,12 @@ var functionC = function functionC(){
 
 	$(document).ready(function(){
 
+		
 		$('#getmse').click(function(){
 			var code = $('#input').val().trim();
 			$('#mse_content').html(getMSE(code));
 		});
+		
 		
 	});
 	
