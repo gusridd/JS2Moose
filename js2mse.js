@@ -61,6 +61,14 @@ var functions = [];
 		return pred_is_a(obj,'VariableDeclarator');
 	}
 
+	var pred_isExpressionStatement = function pred_isExpressionStatement(obj){
+		return pred_is_a(obj,'ExpressionStatement');
+	}
+
+	var pred_isProgram = function pred_isProgram(obj){
+		return pred_is_a(obj,'Program');
+	}
+
 	var f_functions = [];
 	var f_global_variables = [];
 	var f_invocations = [];
@@ -69,10 +77,17 @@ var functions = [];
 
 	var new_collect = function new_collect(AST, context){
 		var obj = AST;
+
+		// Case for global use of 'use strict'
+		if(pred_isProgram(obj) && obj.body.length > 0 && pred_isExpressionStatement(obj.body[0]) && obj.body[0].expression.value == 'use strict'){
+			context.use_strict = true;
+		}
+
 		if(typeof AST === 'object'){
 			for(var key in obj){
 				var value = obj[key];
 				if(pred_IsFunction(value)){
+
 					// Fix for anonymous functions
 					var name = "$"+value.loc.start.line+"_"+value.loc.start.column;
 					if(value.id != null){
@@ -85,6 +100,16 @@ var functions = [];
 					f.params = value.params.map(function(e){
 						return e.name;
 					});
+
+					// 'use strict' validation
+					var body = value.body.body;
+					if(body.length > 0 && body[0].type === "ExpressionStatement" && body[0].expression.value == 'use strict'){
+						f.use_strict = true;
+					} else {
+						// 'use strict' is inherited
+						f.use_strict = context.use_strict;
+					}
+
 					f_functions.push(f);
 
 					// If a local function declaration is made, it must be added to the context static_scope_functions
@@ -144,6 +169,12 @@ var functions = [];
 					
 					f_global_variables.push(f);
 					new_collect(value,context);
+				} else if(pred_isProgram(value)){
+					console.log(value.body[0]);
+					if(value.body.length > 0 && pred_isExpressionStatement(value.body[0])){
+						console.log("useStrict");
+						console.log(context);
+					}
 				} else {
 					new_collect(value,context);
 				}

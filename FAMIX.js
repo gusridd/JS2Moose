@@ -46,6 +46,7 @@ var FAMIX_FUNCTION = function FAMIX_FUNCTION(name){
 	this.static_scope_functions = [];
 	this.static_scope_variables = [];
 	this.params = [];
+	this.use_strict = false;
 
 	this.famixPrint = function famixPrint(str, spacing){
 		str += tab + '(name \'' + this.name + '\')\n';
