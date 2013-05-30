@@ -11,18 +11,9 @@ Usage
 
 1. Download the last stable release from https://github.com/gusridd/JS2Moose/raw/master/releases/JS2Moose.zip
 
-2. Extract the project with your favourite program
-	In ubuntu this can be achieved with the command:
+2. Extract the project with your favourite program.	In ubuntu this can be achieved with the command: ```bash unzip JS2Moose.zip -d JS2Moose ```
 
-```bash
-unzip JS2Moose.zip -d JS2Moose
-```
-
-3. Enter the folder JS2Moose
-
-```bash
-cd JS2Moose
-```
+3. Enter the folder JS2Moose ```bash cd JS2Moose```
 
 4. Open the file index.html with a Web Browser
 
