@@ -1,9 +1,10 @@
 JS2Moose
 ========
 
-This project relies on the esprima JavaScript parser from: https://github.com/ariya/esprima
-
 Usage:
+
+Open the file index.html and paste your code into the left textarea, then click the buttor labeled "getMSE" to obtain the resulting MSE code into the right textarea copy that into a file called as you prefer with .mse extention.
+
 
 The files esprima.js, FAMIX.js and js2mse.js must be included in an html in that order.
 
@@ -23,3 +24,6 @@ An example using Jquery, used on index.html
 	});
 	
 ```
+
+
+This project relies on the esprima JavaScript parser from: https://github.com/ariya/esprima
