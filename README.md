@@ -23,7 +23,7 @@ cd JS2Moose
 
 4) Open the file index.html with a Web Browser
 
-5) Paste your JavaScript code into the the left textarea, then click the button labeled "getMSE". The resulting MSE code will be generated into the right textarea
+5) Paste your JavaScript code into the the left textarea
 
 6) Click the button labeled "getMSE"
 
