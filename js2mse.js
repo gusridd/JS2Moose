@@ -1,5 +1,7 @@
 var functions = [];
 
+var octal_regex = new RegExp("0[0-7]+");
+
 	var collect = function collect(obj, predicate){
 		var list = [];
 		if(typeof obj === 'object'){
@@ -65,8 +67,20 @@ var functions = [];
 		return pred_is_a(obj,'ExpressionStatement');
 	}
 
+	var pred_isObjectExpression = function pred_isObjectExpression(obj){
+		return pred_is_a(obj,'ObjectExpression');
+	}
+
 	var pred_isProgram = function pred_isProgram(obj){
 		return pred_is_a(obj,'Program');
+	}
+
+	var pred_isLiteral = function pred_isLiteral(obj){
+		return pred_is_a(obj,'Literal');
+	}
+
+	var pred_isWithStatement = function pred_isWithStatement(obj){
+		return pred_is_a(obj, 'WithStatement');
 	}
 
 	var f_functions = [];
@@ -75,7 +89,7 @@ var functions = [];
 
 	f_functions.push(famix_window);
 
-	var new_collect = function new_collect(AST, context){
+	var collect = function collect(AST, context){
 		var obj = AST;
 
 		// Case for global use of 'use strict'
@@ -93,6 +107,10 @@ var functions = [];
 					if(value.id != null){
 						name = value.id.name;
 					}
+
+
+					
+
 					var f = new FAMIX_FUNCTION(name);
 					f.context = context;
 					f.LOC = value.range[1] - value.range[0] + 1;
@@ -100,6 +118,10 @@ var functions = [];
 					f.params = value.params.map(function(e){
 						return e.name;
 					});
+					var params_size = f.params.length;
+					if($.unique(f.params).length != params_size){
+						f.use_strict_static_problems.push({description:"duplicated parameter names", location: value.loc});
+					}
 
 					// 'use strict' validation
 					var body = value.body.body;
@@ -122,7 +144,7 @@ var functions = [];
 					// Statis scope functions is inherited
 					f.static_scope_functions = context.static_scope_functions;
 
-					new_collect(value,f);
+					collect(value,f);
 
 				} else if (pred_IsCallExpression(value)){
 					var f = new FAMIX_INVOCATION();
@@ -155,10 +177,10 @@ var functions = [];
 					if( typeof f.signature != 'undefined' && typeof f.receiver != 'undefined' && typeof f.receiver != 'function'){
 						f_invocations.push(f);
 					}
-					new_collect(value,context);
+					collect(value,context);
 
 				} else if (pred_isVariableDeclaration(value)){
-					new_collect(value,context);
+					collect(value,context);
 				} else if (pred_isVariableDeclarator(value)){
 					var f = new FAMIX_GLOBAL_VAR(value.id.name);
 					if(value.id.name != 'length'){
@@ -168,22 +190,43 @@ var functions = [];
 					}
 					
 					f_global_variables.push(f);
-					new_collect(value,context);
+					collect(value,context);
 				} else if(pred_isProgram(value)){
 					console.log(value.body[0]);
 					if(value.body.length > 0 && pred_isExpressionStatement(value.body[0])){
 						console.log("useStrict");
 						console.log(context);
 					}
+				} else if(pred_isObjectExpression(value)) {
+					// Checking for duplicated property names
+					var keys = value.properties.map(function(el){
+						return el.key.name;
+					});
+					var size = keys.length;
+					if($.unique(keys).length != size){
+						context.use_strict_static_problems.push({description:"duplicated property name at object literal", location:value.loc});
+					}
+				} else if(pred_isLiteral(value)) {
+					// Check for octal syntax
+					if(octal_regex.exec(value.raw)){
+						context.use_strict_static_problems.push({description:"octal syntax", location:value.loc});
+					}
+				} else if(pred_isWithStatement(value)) {
+					context.use_strict_static_problems.push({description:"'with' syntax", location:value.loc});
+				} else if(pred_isExpressionStatement(value)) {
+					if(value.expression.operator == "=" && value.expression.left.type == 'Identifier' && value.expression.left.name == "eval"){
+						// console.log(value.expression.left);
+						context.use_strict_static_problems.push({description:"trying to asign to reserved word 'eval'", location:value.loc});
+					}
 				} else {
-					new_collect(value,context);
+					collect(value,context);
 				}
 			}
 		} 
 		return;
 	}
 
-	var new_candidates = function new_candidates(invocations, functions){
+	var newCandidates = function newCandidates(invocations, functions){
 		return invocations.map(function(invocation){
 			var candidates = functions.filter(function(fun){
 				return fun.name == invocation.signature;
@@ -193,11 +236,25 @@ var functions = [];
 		});
 	}
 
+	/**
+	* This functions returns true if an AST function is statically enabled for using 'use strict'
+	* and returns an array of error otherwise
+	**/
+	var isStaticUseStrict = function isStaticUseStrict(AST){
+		for(var es in AST.body.body){
+			var prop = AST.body.body[es];
+			console.log(es);
+			console.log(prop);
+		}
+
+		return true;
+	};
+
 	// This functions returns the MSE text for some JavasScript code
 	var getMSE = function getMSE(js_code){
 		t = esprima.parse(js_code, {range:true, loc:true});
-		new_collect(t,famix_window);
-		new_candidates(f_invocations, f_functions);
+		collect(t,famix_window);
+		newCandidates(f_invocations, f_functions);
 		var str = "(\n";
 		f_functions.map(function(e){
 			str += e.toString(1);

@@ -36,4 +36,4 @@ Dependencies
 ========
 
 This project relies on the esprima JavaScript parser from: https://github.com/ariya/esprima
-It uses JQuery as DOM manipulator from: http://jquery.com/
+It uses JQuery as the DOM manipulator from: http://jquery.com/

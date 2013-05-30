@@ -29,7 +29,7 @@
 
 	<div class="inline">
 		<textarea id="input">
-"use strict";
+//"use strict";
 var console = console || {};
 
 var Shape = function Shape(x,y){
@@ -84,6 +84,40 @@ var anon = function(){
 var functionC = function functionC(){
 	return s.getX();
 }
+
+var o = { p: 1, p: 2 }; // !!! syntax error
+
+var repeatedParams = function repeatedParams(a,a,b){
+	return a;
+}
+
+var sum = 015 + // !!! syntax error
+          197 +
+          142;
+
+var octal_string = "\045";
+
+var x = 17;
+with (obj) // !!! syntax error
+{
+  // If this weren't strict mode, would this be var x, or
+  // would it instead be obj.x?  It's impossible in general
+  // to say without running the code, so the name can't be
+  // optimized.
+  x;
+}
+
+eval = 17;
+arguments++;
+++eval;
+var obj = { set p(arguments) { } };
+var eval;
+try { } catch (arguments) { }
+function x(eval) { }
+function arguments() { }
+var y = function eval() { };
+var f = new Function("arguments", "'use strict'; return 17;");
+
 		</textarea>
 	</div>
 	
