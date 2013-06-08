@@ -154,8 +154,8 @@ var f = new Function("arguments", "'use strict'; return 17;");
 			var code = $('#input').val().trim();
 			$('#mse_content').html(getMSE(code));
 
-			var strictVisitor = new StrictVisitor();
-			visitAST(t,strictVisitor);
+			var emptyVisitor = new EmptyVisitor();
+			accept(t,emptyVisitor);
 
 		});		
 		

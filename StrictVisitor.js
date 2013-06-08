@@ -1,106 +1,104 @@
-var visitAST = function visitAST(AST, visitor){
+var accept = function accept(AST, visitor){
 	if(AST === null){
 		return;
 	}
-	console.log(AST);
-	if(pred_isProgram(AST)){
+	if(pred_is_a(AST,'Program')){
 
 		visitor.visitProgram(AST);
 		for(var key in AST.body){
 			var statement = AST.body[key];
-			visitAST(statement,visitor);
+			accept(statement,visitor);
 		}
 
-	} else if(pred_isLiteral(AST)){
+	} else if(pred_is_a(AST,'Literal')){
 
 		// Nothing to traverse here
 		visitor.visitLiteral(AST);
 
-	} else if(pred_isVariableDeclarator(AST)){
+	} else if(pred_is_a(AST,'VariableDeclarator')){
 
 		visitor.visitVariableDeclarator(AST);
-		visitAST(AST.id,visitor);
-		visitAST(AST.init,visitor);
+		accept(AST.id,visitor);
+		accept(AST.init,visitor);
 
-	} else if(pred_IsFunctionExpression(AST)){
+	} else if(pred_is_a(AST,'FunctionExpression')){
 
 		visitor.visitFunctionExpression(AST);
-		visitAST(AST.id,visitor);
+		accept(AST.id,visitor);
 		for(var key in AST.params){
 			var param = AST.params[key];
-			visitAST(param,visitor);
+			accept(param,visitor);
 		}
-		visitAST(AST.body,visitor);
+		accept(AST.body,visitor);
 
-	} else if(pred_isWithStatement(AST)){
+	} else if(pred_is_a(AST,'WithStatement')){
 
 		visitor.visitWithStatement(AST);
-		visitAST(AST.object,visitor);
-		visitAST(AST.body,visitor);
+		accept(AST.object,visitor);
+		accept(AST.body,visitor);
 
-	} else if(pred_isExpressionStatement(AST)){
+	} else if(pred_is_a(AST,'ExpressionStatement')){
 		
 		visitor.visitExpressionStatement(AST);
-		visitAST(AST.expression,visitor);
+		accept(AST.expression,visitor);
 
-	} else if(pred_isVariableDeclaration(AST)){
+	} else if(pred_is_a(AST, 'VariableDeclaration')){
 
 		visitor.visitVariableDeclaration(AST);
 		for(var key in AST.declarations){
 			var declaration = AST.declarations[key];
-			visitAST(declaration,visitor);
+			accept(declaration,visitor);
 		}
 
-	} else if(pred_isObjectExpression(AST)){
+	} else if(pred_is_a(AST, 'ObjectExpression')){
 
 		visitor.visitObjectExpression(AST);
 		for(var key in AST.properties){
 			var property = AST.properties[key];
-			visitAST(property,visitor);
+			accept(property,visitor);
 		}
-		
 
-	} else if(pred_IsCallExpression(AST)){
+	} else if(pred_is_a(AST, 'CallExpression')){
 
 		visitor.visitCallExpression(AST);
 		for(key in AST.arguments){
 			var argument = AST.arguments[key];
-			visitAST(argument,visitor);
+			accept(argument,visitor);
 		}
-		visitAST(AST.callee,visitor);
+		accept(AST.callee,visitor);
 
-	} else if(pred_IsFunctionDeclaration(AST)){
+	} else if(pred_is_a(AST, 'FunctionDeclaration')){
 
 		visitor.visitFunctionDeclaration(AST);
-		visitAST(AST.body,visitor);
+		accept(AST.body,visitor);
 		for(key in AST.defaults){
 			var defl = AST.defaults[key];
-			visitAST(defl, visitor);
+			accept(defl, visitor);
 		}
-		visitAST(AST.id,visitor);
+		accept(AST.id,visitor);
 		for(key in AST.params){
 			var param = AST.params[key];
-			visitAST(param, visitor);
+			accept(param, visitor);
 		}
 
-	} else if(pred_isTryStatement(AST)){
+	} else if(pred_is_a(AST, 'TryStatement')){
 
 		visitor.visitTryStatement(AST);
-		visitAST(AST.block,visitor);
+		accept(AST.block,visitor);
 		for(var key in AST.guardedHandlers){
 			var guardedHandler = AST.guardedHandlers[key];
-			visitAST(guardedHandler,visitor);
+			accept(guardedHandler,visitor);
 		}
 		for(var key in AST.handlers){
 			var handler = AST.handlers[key];
-			visitAST(handler,visitor);
+			accept(handler,visitor);
 		}
 
 	} else if(pred_is_a(AST,'CatchClause')){
 
 		visitor.visitCatchClause(AST);
-		visitAST(AST.param, visitor);
-		visitAST(AST.body, visitor);
+		accept(AST.param, visitor);
+		accept(AST.body, visitor);
 
 	} else if(pred_is_a(AST,'Identifier')){
 
@@ -109,75 +107,77 @@ var visitAST = function visitAST(AST, visitor){
 	} else if(pred_is_a(AST,'LogicalExpression')){
 
 		visitor.visitLogicalExpression(AST);
-		visitAST(AST.left, visitor);
-		visitAST(AST.right, visitor);
+		accept(AST.left, visitor);
+		accept(AST.right, visitor);
 
 	} else if(pred_is_a(AST,'NewExpression')){
 
 		visitor.visitNewExpression(AST);
 		for(var key in AST.arguments){
 			var argument = AST.arguments[key];
-			visitAST(argument,visitor);
+			accept(argument,visitor);
 		}
-		visitAST(AST.callee, visitor);
+		accept(AST.callee, visitor);
 
 
 	} else if(pred_is_a(AST,'BinaryExpression')){
 
 		visitor.visitBinaryExpression(AST);
-		visitAST(AST.left, visitor);
-		visitAST(AST.right, visitor);
+		accept(AST.left, visitor);
+		accept(AST.right, visitor);
 
 	} else if(pred_is_a(AST,'AssignmentExpression')){
 
 		visitor.visitAssignmentExpression(AST);
-		visitAST(AST.left, visitor);
-		visitAST(AST.right, visitor);
+		accept(AST.left, visitor);
+		accept(AST.right, visitor);
 
 	} else if(pred_is_a(AST,'UpdateExpression')){
 
 		visitor.visitUpdateExpression(AST);
-		visitAST(AST.argument, visitor);
+		accept(AST.argument, visitor);
 
 	} else if(pred_is_a(AST,'Property')){
 
 		visitor.visitProperty(AST);
-		visitAST(AST.key,visitor);
-		visitAST(AST.value,visitor);
+		accept(AST.key,visitor);
+		accept(AST.value,visitor);
 
 	} else if(pred_is_a(AST,'BlockStatement')){
 		visitor.visitBlockStatement(AST);
 
 		for(var key in AST.body){
 			var statement = AST.body[key];
-			visitAST(statement,visitor);
+			accept(statement,visitor);
 		}
 	} else if(pred_is_a(AST,'ReturnStatement')){
 
 		visitor.visitReturnStatement(AST);
-		visitAST(AST.argument, visitor);
+		accept(AST.argument, visitor);
 
 	} else if(pred_is_a(AST,'MemberExpression')){
 		
 		visitor.visitMemberExpression(AST);
-		visitAST(AST.object,visitor);
-		visitAST(AST.property,visitor);
+		accept(AST.object,visitor);
+		accept(AST.property,visitor);
 
 	} else if(pred_is_a(AST,'ThisExpression')){
 
+		// Nothing to traverse here
 		visitor.visitThisExpression(AST);
 
 	} else {
 
+		// Default case when a predicate is missing
 		console.error(AST);
-		throw "visitAST does not have a predicate for this object";
+		throw "accept does not have a predicate for this object";
 
 	}
 }
 
 
 
-var StrictVisitor = function StrictVisitor(){
+var EmptyVisitor = function EmptyVisitor(){
 
 
 	this.visitProgram = function visitProgram(AST){
