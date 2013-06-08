@@ -62,6 +62,13 @@ var FAMIX_FUNCTION = function FAMIX_FUNCTION(name){
 			str += tab + '(parentScope (ref: ' + this.context.id + '))\n'
 		}
 		str = this.makeSpacing(str, spacing);
+		console.log(this.use_strict_static_problems.length);
+		if(this.use_strict_static_problems.length != 0){
+			str += tab + '(staticUseStrictEnabled false)\n';
+		} else {
+			str += tab + '(staticUseStrictEnabled true)\n';
+		}
+		str = this.makeSpacing(str, spacing);
 		str += tab + '(numberOfLinesOfCode ' + this.LOC + ')\n';
 		str = this.makeSpacing(str, spacing);
 		str += tab + '(numberOfStatements ' + this.statements + '))\n';

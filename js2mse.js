@@ -83,11 +83,18 @@ var octal_regex = new RegExp("0[0-7]+");
 		return pred_is_a(obj, 'WithStatement');
 	}
 
+	var pred_isTryStatement = function pred_isTryStatement(obj){
+		return pred_is_a(obj, 'TryStatement');
+	}
+
 	var f_functions = [];
 	var f_global_variables = [];
 	var f_invocations = [];
 
 	f_functions.push(famix_window);
+
+
+	
 
 	var collect = function collect(AST, context){
 		var obj = AST;
@@ -143,8 +150,11 @@ var octal_regex = new RegExp("0[0-7]+");
 
 					// Statis scope functions is inherited
 					f.static_scope_functions = context.static_scope_functions;
-
+					
 					collect(value,f);
+
+					// Saving the famix function attached to the AST for previous processing
+					value.famix = f;
 
 				} else if (pred_IsCallExpression(value)){
 					var f = new FAMIX_INVOCATION();
@@ -214,8 +224,9 @@ var octal_regex = new RegExp("0[0-7]+");
 				} else if(pred_isWithStatement(value)) {
 					context.use_strict_static_problems.push({description:"'with' syntax", location:value.loc});
 				} else if(pred_isExpressionStatement(value)) {
-					if(value.expression.operator == "=" && value.expression.left.type == 'Identifier' && value.expression.left.name == "eval"){
-						// console.log(value.expression.left);
+					if(value.expression.operator == "=" 
+						&& value.expression.left.type == 'Identifier' 
+						&& (value.expression.left.name == "eval" || value.expression.left.name == 'arguments')) {
 						context.use_strict_static_problems.push({description:"trying to asign to reserved word 'eval'", location:value.loc});
 					}
 				} else {
