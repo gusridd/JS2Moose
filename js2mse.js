@@ -27,66 +27,6 @@ var octal_regex = new RegExp("0[0-7]+");
 		}
 	}
 
-	var pred_IsFunctionExpression = function pred_IsFunctionExpression(obj){
-		return pred_is_a(obj,'FunctionExpression');
-	};
-
-	var pred_IsFunctionDeclaration = function pred_IsFunctionDeclaration(obj){
-		return pred_is_a(obj,'FunctionDeclaration');
-	};
-
-	var pred_IsFunction = function pred_IsFunction(obj){
-		return pred_IsFunctionDeclaration(obj) || pred_IsFunctionExpression(obj);
-	}
-
-	var pred_IsCallExpression = function pred_IsCallExpression(obj){
-		return pred_is_a(obj,'CallExpression');
-	};
-
-	var pred_IsIfStatement = function pred_IsIfStatement(obj){
-		return pred_is_a(obj,'IfStatement');
-	};
-
-	var pred_IsMemberCallExpression = function pred_IsMemberCallExpression(obj){
-		return pred_is_a(obj,'CallExpression') && pred_is_a(obj.callee, 'MemberExpression');
-	}
-
-	var pred_isVariableDeclarator = function pred_isVariableDeclarator(obj){
-		return pred_is_a(obj,'VariableDeclarator');
-	}
-
-	var pred_isVariableDeclaration = function pred_isVariableDeclaration(obj){
-		return pred_is_a(obj,'VariableDeclaration');
-	}
-
-	var pred_isVariableDeclarator = function pred_isVariableDeclarator(obj){
-		return pred_is_a(obj,'VariableDeclarator');
-	}
-
-	var pred_isExpressionStatement = function pred_isExpressionStatement(obj){
-		return pred_is_a(obj,'ExpressionStatement');
-	}
-
-	var pred_isObjectExpression = function pred_isObjectExpression(obj){
-		return pred_is_a(obj,'ObjectExpression');
-	}
-
-	var pred_isProgram = function pred_isProgram(obj){
-		return pred_is_a(obj,'Program');
-	}
-
-	var pred_isLiteral = function pred_isLiteral(obj){
-		return pred_is_a(obj,'Literal');
-	}
-
-	var pred_isWithStatement = function pred_isWithStatement(obj){
-		return pred_is_a(obj, 'WithStatement');
-	}
-
-	var pred_isTryStatement = function pred_isTryStatement(obj){
-		return pred_is_a(obj, 'TryStatement');
-	}
-
 	var f_functions = [];
 	var f_global_variables = [];
 	var f_invocations = [];
@@ -100,14 +40,14 @@ var octal_regex = new RegExp("0[0-7]+");
 		var obj = AST;
 
 		// Case for global use of 'use strict'
-		if(pred_isProgram(obj) && obj.body.length > 0 && pred_isExpressionStatement(obj.body[0]) && obj.body[0].expression.value == 'use strict'){
+		if(pred_is_a(obj, 'Program') && obj.body.length > 0 && pred_is_a(obj.body[0], 'ExpressionStatement') && obj.body[0].expression.value == 'use strict'){
 			context.use_strict = true;
 		}
 
 		if(typeof AST === 'object'){
 			for(var key in obj){
 				var value = obj[key];
-				if(pred_IsFunction(value)){
+				if(pred_is_a(value, 'Function')){
 
 					// Fix for anonymous functions
 					var name = "$"+value.loc.start.line+"_"+value.loc.start.column;
@@ -142,7 +82,7 @@ var octal_regex = new RegExp("0[0-7]+");
 					f_functions.push(f);
 
 					// If a local function declaration is made, it must be added to the context static_scope_functions
-					if(pred_IsFunctionDeclaration(value)){
+					if(pred_is_a(value, 'FunctionDeclaration')){
 						context.static_scope_functions[f.name] = f;
 					}
 					// Static scope variables is inherited
@@ -156,7 +96,7 @@ var octal_regex = new RegExp("0[0-7]+");
 					// Saving the famix function attached to the AST for previous processing
 					value.famix = f;
 
-				} else if (pred_IsCallExpression(value)){
+				} else if (pred_is_a(value, 'CallExpression')){
 					var f = new FAMIX_INVOCATION();
 					f.candidates = [];
 					f.sender = context;
@@ -189,9 +129,9 @@ var octal_regex = new RegExp("0[0-7]+");
 					}
 					collect(value,context);
 
-				} else if (pred_isVariableDeclaration(value)){
+				} else if (pred_is_a(value, 'VariableDeclaration')){
 					collect(value,context);
-				} else if (pred_isVariableDeclarator(value)){
+				} else if (pred_is_a(value, 'VariableDeclarator')){
 					var f = new FAMIX_GLOBAL_VAR(value.id.name);
 					if(value.id.name != 'length'){
 						context.static_scope_variables[value.id.name] = f
@@ -201,13 +141,13 @@ var octal_regex = new RegExp("0[0-7]+");
 					
 					f_global_variables.push(f);
 					collect(value,context);
-				} else if(pred_isProgram(value)){
+				} else if(pred_is_a(value, 'Program')){
 					console.log(value.body[0]);
-					if(value.body.length > 0 && pred_isExpressionStatement(value.body[0])){
+					if(value.body.length > 0 && pred_is_a(value.body[0], 'ExpressionStatement')){
 						console.log("useStrict");
 						console.log(context);
 					}
-				} else if(pred_isObjectExpression(value)) {
+				} else if(pred_is_a(value, 'ObjectExpression')) {
 					// Checking for duplicated property names
 					var keys = value.properties.map(function(el){
 						return el.key.name;
@@ -216,14 +156,14 @@ var octal_regex = new RegExp("0[0-7]+");
 					if($.unique(keys).length != size){
 						context.use_strict_static_problems.push({description:"duplicated property name at object literal", location:value.loc});
 					}
-				} else if(pred_isLiteral(value)) {
+				} else if(pred_is_a(value, 'Literal')) {
 					// Check for octal syntax
 					if(octal_regex.exec(value.raw)){
 						context.use_strict_static_problems.push({description:"octal syntax", location:value.loc});
 					}
-				} else if(pred_isWithStatement(value)) {
+				} else if(pred_is_a(value, 'WithStatement')) {
 					context.use_strict_static_problems.push({description:"'with' syntax", location:value.loc});
-				} else if(pred_isExpressionStatement(value)) {
+				} else if(pred_is_a(value, 'ExpressionStatement')) {
 					if(value.expression.operator == "=" 
 						&& value.expression.left.type == 'Identifier' 
 						&& (value.expression.left.name == "eval" || value.expression.left.name == 'arguments')) {
