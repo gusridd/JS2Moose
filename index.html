@@ -10,7 +10,7 @@
 	<script src="esmorph.js"></script>
 
 	<script type="text/javascript" src="FAMIX.js"></script>
-	<script type="text/javascript" src="StrictVisitor.js"></script>
+	<script type="text/javascript" src="ASTVisitor.js"></script>
 	<script type="text/javascript" src="checkInterface.js"></script>
 	<script src="js2mse.js"></script>
 
@@ -154,8 +154,8 @@ var f = new Function("arguments", "'use strict'; return 17;");
 			var code = $('#input').val().trim();
 			$('#mse_content').html(getMSE(code));
 
-			var emptyVisitor = new EmptyVisitor();
-			accept(t,emptyVisitor);
+			var astVisitor = new ASTVisitor();
+			accept(t,astVisitor);
 
 		});		
 		
