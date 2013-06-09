@@ -24,7 +24,7 @@ var KeywordsVisitor = function KeywordsVisitor() {
 
 	this.visitVariableDeclaration = function visitVariableDeclaration(AST){
 		
-		var context = this.context[this.context.length -1];
+		var context = this.getContext();
 
 		for(var key in AST.declarations){
 			var declaration = AST.declarations[key];
@@ -36,7 +36,7 @@ var KeywordsVisitor = function KeywordsVisitor() {
 
 	this.visitAssignmentExpression = function visitAssignmentExpression(AST){
 
-		var context = this.context[this.context.length -1];
+		var context = this.getContext();
 
 		if(this.isKeyword(AST.left.name)){
 			context.famix.use_strict_static_problems.push({description:"Assignment to eval or arguments is not allowed in strict mode", loc: AST.loc, range: AST.range});
@@ -45,7 +45,7 @@ var KeywordsVisitor = function KeywordsVisitor() {
 
 	this.visitUpdateExpression = function visitUpdateExpression(AST){
 
-		var context = this.context[this.context.length -1];
+		var context = this.getContext();
 
 		if(this.isKeyword(AST.argument.name)){
 			context.famix.use_strict_static_problems.push({description:"Update to eval or arguments is not allowed in strict mode", loc: AST.loc, range: AST.range});
@@ -54,7 +54,7 @@ var KeywordsVisitor = function KeywordsVisitor() {
 
 	this.visitCatchClause = function visitCatchClause(AST){
 
-		var context = this.context[this.context.length -1];
+		var context = this.getContext();
 		if(this.isKeyword(AST.param.name)){
 			context.famix.use_strict_static_problems.push({description:"eval or arguments are not allowed in catch clause as a parameter", loc: AST.loc, range: AST.range});
 		}
@@ -70,7 +70,7 @@ var KeywordsVisitor = function KeywordsVisitor() {
 
 	this.checkFunction = function checkFunction(AST){
 
-		var context = this.context[this.context.length -2];
+		var context = this.getContext(2);
 		if(AST.id != null && this.isKeyword(AST.id.name)){
 			context.famix.use_strict_static_problems.push({description:"FunctionExpression cannot be named eval or arguments in strict mode", loc: AST.loc, range: AST.range});
 		}
