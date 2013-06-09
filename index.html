@@ -11,6 +11,10 @@
 
 	<script type="text/javascript" src="FAMIX.js"></script>
 	<script type="text/javascript" src="ASTVisitor.js"></script>
+	<script type="text/javascript" src="DuplicatePropertyVisitor.js"></script>
+	<script type="text/javascript" src="OctalSyntaxVisitor.js"></script>
+	<script type="text/javascript" src="ScopeVisitor.js"></script>
+	<script type="text/javascript" src="StrictVisitor.js"></script>
 	<script type="text/javascript" src="checkInterface.js"></script>
 	<script src="js2mse.js"></script>
 
@@ -154,8 +158,12 @@ var f = new Function("arguments", "'use strict'; return 17;");
 			var code = $('#input').val().trim();
 			$('#mse_content').html(getMSE(code));
 
-			var astVisitor = new ASTVisitor();
-			accept(t,astVisitor);
+			// var strictVisitor = new StrictVisitor();
+			// accept(t,strictVisitor);
+			var dupPropertyVisitor = new DuplicatePropertyVisitor();
+			accept(t,dupPropertyVisitor);
+			var octalVisitor = new OctalSyntaxVisitor();
+			accept(t,octalVisitor);
 
 		});		
 		

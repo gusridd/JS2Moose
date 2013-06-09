@@ -1,6 +1,6 @@
 var functions = [];
 
-var octal_regex = new RegExp("0[0-7]+");
+// var octal_regex = new RegExp("0[0-7]+");
 
 	var collect = function collect(obj, predicate){
 		var list = [];
@@ -47,7 +47,7 @@ var octal_regex = new RegExp("0[0-7]+");
 		if(typeof AST === 'object'){
 			for(var key in obj){
 				var value = obj[key];
-				if(pred_is_a(value, 'Function')){
+				if(pred_is_a(value, 'FunctionDeclaration') || pred_is_a(value,'FunctionExpression')){
 
 					// Fix for anonymous functions
 					var name = "$"+value.loc.start.line+"_"+value.loc.start.column;
@@ -142,12 +142,13 @@ var octal_regex = new RegExp("0[0-7]+");
 					f_global_variables.push(f);
 					collect(value,context);
 				} else if(pred_is_a(value, 'Program')){
+					
 					console.log(value.body[0]);
 					if(value.body.length > 0 && pred_is_a(value.body[0], 'ExpressionStatement')){
 						console.log("useStrict");
 						console.log(context);
 					}
-				} else if(pred_is_a(value, 'ObjectExpression')) {
+				/*} else if(pred_is_a(value, 'ObjectExpression')) {
 					// Checking for duplicated property names
 					var keys = value.properties.map(function(el){
 						return el.key.name;
@@ -155,12 +156,12 @@ var octal_regex = new RegExp("0[0-7]+");
 					var size = keys.length;
 					if($.unique(keys).length != size){
 						context.use_strict_static_problems.push({description:"duplicated property name at object literal", location:value.loc});
-					}
-				} else if(pred_is_a(value, 'Literal')) {
+					}*/
+				/*} else if(pred_is_a(value, 'Literal')) {
 					// Check for octal syntax
 					if(octal_regex.exec(value.raw)){
 						context.use_strict_static_problems.push({description:"octal syntax", location:value.loc});
-					}
+					}*/
 				} else if(pred_is_a(value, 'WithStatement')) {
 					context.use_strict_static_problems.push({description:"'with' syntax", location:value.loc});
 				} else if(pred_is_a(value, 'ExpressionStatement')) {
@@ -174,6 +175,9 @@ var octal_regex = new RegExp("0[0-7]+");
 				}
 			}
 		} 
+		if(pred_is_a(obj, 'Program')){
+			AST.famix = famix_window;
+		}
 		return;
 	}
 

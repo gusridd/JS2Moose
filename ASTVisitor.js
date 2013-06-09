@@ -1,9 +1,12 @@
+'use strict'
+
 var accept = function accept(AST, visitor){
 	if(AST === null){
 		return;
 	}
 	if(pred_is_a(AST,'Program')){
 
+		visitor.context.push(AST);
 		visitor.visitProgram(AST);
 		for(var key in AST.body){
 			var statement = AST.body[key];
@@ -23,6 +26,7 @@ var accept = function accept(AST, visitor){
 
 	} else if(pred_is_a(AST,'FunctionExpression')){
 
+		visitor.context.push(AST);
 		visitor.visitFunctionExpression(AST);
 		accept(AST.id,visitor);
 		for(var key in AST.params){
@@ -30,6 +34,7 @@ var accept = function accept(AST, visitor){
 			accept(param,visitor);
 		}
 		accept(AST.body,visitor);
+		visitor.context.pop();
 
 	} else if(pred_is_a(AST,'WithStatement')){
 
@@ -69,6 +74,7 @@ var accept = function accept(AST, visitor){
 
 	} else if(pred_is_a(AST, 'FunctionDeclaration')){
 
+		visitor.context.push(AST);
 		visitor.visitFunctionDeclaration(AST);
 		accept(AST.body,visitor);
 		for(key in AST.defaults){
@@ -80,6 +86,7 @@ var accept = function accept(AST, visitor){
 			var param = AST.params[key];
 			accept(param, visitor);
 		}
+		visitor.context.pop();
 
 	} else if(pred_is_a(AST, 'TryStatement')){
 
@@ -180,6 +187,8 @@ var accept = function accept(AST, visitor){
  **/
 
 var ASTVisitor = function ASTVisitor(){
+
+	this.context = [];
 
 	this.visitProgram = function visitProgram(AST){}
 
