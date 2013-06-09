@@ -16,6 +16,7 @@
 	<script type="text/javascript" src="KeywordsVisitor.js"></script>
 	<script type="text/javascript" src="WithVisitor.js"></script>
 	<script type="text/javascript" src="OctalSyntaxVisitor.js"></script>
+	<script type="text/javascript" src="CalleeVisitor.js"></script>
 	<script type="text/javascript" src="ScopeVisitor.js"></script>
 	<script type="text/javascript" src="StrictVisitor.js"></script>
 	<script type="text/javascript" src="checkInterface.js"></script>
@@ -127,6 +128,9 @@ function arguments() { }
 var y = function eval() { };
 var f = new Function("arguments", "'use strict'; return 17;");
 
+var f = function() { return arguments.callee; };
+f(); // throws a TypeError
+
 		</textarea>
 	</div>
 	
@@ -178,6 +182,9 @@ var f = new Function("arguments", "'use strict'; return 17;");
 
 			var octalVisitor = new OctalSyntaxVisitor();
 			accept(t,octalVisitor);
+
+			var calleeVisitor = new CalleeVisitor();
+			accept(t,calleeVisitor);
 
 		});		
 		

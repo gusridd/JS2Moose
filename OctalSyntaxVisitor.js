@@ -14,7 +14,7 @@ var OctalSyntaxVisitor = function OctalSyntaxVisitor() {
 
 		if(octal_regex.exec(AST.raw)){
 			// The problem is registered into the corresponding famix object
-			var context = this.context[this.context.length -1];
+			var context = this.getContext();
 			context.famix.use_strict_static_problems.push({description:"octal syntax", loc: AST.loc, range: AST.range});
 		}
 

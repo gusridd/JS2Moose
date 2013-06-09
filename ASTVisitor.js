@@ -190,6 +190,11 @@ var ASTVisitor = function ASTVisitor(){
 
 	this.context = [];
 
+	this.getContext = function getContext(i){
+		var n = i || 1;
+		return this.context[this.context.length - n];
+	}
+
 	this.visitProgram = function visitProgram(AST){}
 
 	this.visitFunctionDeclaration = function visitFunctionDeclaration(AST){}
