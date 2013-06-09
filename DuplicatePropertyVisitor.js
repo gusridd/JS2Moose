@@ -15,6 +15,7 @@ var DuplicatePropertyVisitor = function DuplicatePropertyVisitor(ctx) {
 		});
 		if($.unique(keys).length != size){
 			// The problem is registered into the corresponding famix object
+			var context = this.context[this.context.length -1];
 			context.famix.use_strict_static_problems.push({description:"duplicated parameter names", loc: AST.loc, range: AST.range});
 		}
 	}

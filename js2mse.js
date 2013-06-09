@@ -65,10 +65,10 @@ var functions = [];
 					f.params = value.params.map(function(e){
 						return e.name;
 					});
-					var params_size = f.params.length;
+					/*var params_size = f.params.length;
 					if($.unique(f.params).length != params_size){
 						f.use_strict_static_problems.push({description:"duplicated parameter names", location: value.loc});
-					}
+					}*/
 
 					// 'use strict' validation
 					var body = value.body.body;
@@ -162,14 +162,14 @@ var functions = [];
 					if(octal_regex.exec(value.raw)){
 						context.use_strict_static_problems.push({description:"octal syntax", location:value.loc});
 					}*/
-				} else if(pred_is_a(value, 'WithStatement')) {
-					context.use_strict_static_problems.push({description:"'with' syntax", location:value.loc});
-				} else if(pred_is_a(value, 'ExpressionStatement')) {
+				/*} else if(pred_is_a(value, 'WithStatement')) {
+					context.use_strict_static_problems.push({description:"'with' syntax", location:value.loc});*/
+				/*} else if(pred_is_a(value, 'ExpressionStatement')) {
 					if(value.expression.operator == "=" 
 						&& value.expression.left.type == 'Identifier' 
 						&& (value.expression.left.name == "eval" || value.expression.left.name == 'arguments')) {
 						context.use_strict_static_problems.push({description:"trying to asign to reserved word 'eval'", location:value.loc});
-					}
+					}*/
 				} else {
 					collect(value,context);
 				}
