@@ -14,12 +14,14 @@
 * var f = new Function("arguments", "'use strict'; return 17;");
 **/
 
+var keyword_regex = new RegExp("eval|arguments|implements|interface|let|package|private|protected|public|static|yield");
+
 var KeywordsVisitor = function KeywordsVisitor() {
 
 	var that = this;
 
 	this.isKeyword = function isKeyword(word){
-		return word == 'eval' || word == 'arguments';
+		return keyword_regex.exec(word) != null;
 	}
 
 	this.visitVariableDeclaration = function visitVariableDeclaration(AST){
