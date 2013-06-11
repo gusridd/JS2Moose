@@ -216,6 +216,12 @@ var accept = function accept(AST, visitor){
 		accept(AST.test, visitor);
 		accept(AST.body, visitor);
 
+	} else if(pred_is_a(AST,'DoWhileStatement')){
+
+		visitor.acceptDoWhileStatement(AST);
+		accept(AST.test, visitor);
+		accept(AST.body, visitor);
+
 	} else if(pred_is_a(AST,'SwitchStatement')){
 
 		visitor.visitSwitchStatement(AST);
@@ -247,6 +253,28 @@ var accept = function accept(AST, visitor){
 		visitor.visitLabeledStatement(AST);
 		accept(AST.label, visitor);
 		accept(AST.body, visitor);
+
+	} else if(pred_is_a(AST,'EmptyStatement')){
+
+		// Nothing to traverse here
+		visitor.visitEmptyStatement(AST);
+
+	} else if(pred_is_a(AST,'ForInStatement')){
+
+		visitor.visitForInStatement(AST);
+		accept(AST.left,visitor);
+		accept(AST.right,visitor);
+		accept(AST.body,visitor);
+
+	} else if(pred_is_a(AST,'ThrowStatement')){
+
+		visitor.visitThrowStatement(AST);
+		accept(AST.argument, visitor);
+
+	} else if(pred_is_a(AST,'BreakStatement')){
+
+		visitor.visitBreakStatement(AST);
+		accept(AST.label, visitor);
 
 	} else {
 
@@ -324,6 +352,8 @@ var ASTVisitor = function ASTVisitor(){
 
 	this.visitForStatement = function visitForStatement(AST){}
 
+	this.visitForInStatement = function visitForInStatement(AST){}
+
 	this.visitArrayExpression = function visitArrayExpression(AST){}
 
 	this.visitWhileStatement = function visitWhileStatement(AST){}
@@ -336,12 +366,12 @@ var ASTVisitor = function ASTVisitor(){
 
 	this.visitLabeledStatement = function visitLabeledStatement(AST){}
 
-}
+	this.visitEmptyStatement = function visitEmptyStatement(AST){}
 
+	this.visitThrowStatement = function visitThrowStatement(AST){}
 
-function hola(x){
-	switch(x):
-		case "hola" return 1;
-		case "holo" return 2;
-	return 3;
+	this.acceptDoWhileStatement = function acceptDoWhileStatement(AST){}
+
+	this.visitBreakStatement = function visitBreakStatement(AST){}
+
 }
