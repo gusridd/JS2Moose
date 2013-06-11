@@ -18,7 +18,7 @@ var functions = [];
 	};
 
 	var pred_is_a = function pred_is_a(obj, typeName){
-		if(obj === null || obj.type === undefined){
+		if(obj === null || obj === undefined || obj.type === undefined){
 			return false;
 		} else if(obj.type === typeName){
 			return true;

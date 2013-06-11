@@ -1,7 +1,8 @@
 'use strict'
 
 var accept = function accept(AST, visitor){
-	if(AST === null){
+
+	if(AST === null || AST === undefined){
 		return;
 	}
 	if(pred_is_a(AST,'Program')){
@@ -173,6 +174,80 @@ var accept = function accept(AST, visitor){
 		// Nothing to traverse here
 		visitor.visitThisExpression(AST);
 
+	} else if(pred_is_a(AST,'IfStatement')){
+
+		visitor.visitIfStatement(AST);
+		accept(AST.test,visitor);
+		console.log(AST.consecuent);
+		accept(AST.consecuent,visitor);
+		accept(AST.alternate,visitor);
+
+	} else if(pred_is_a(AST,'ConditionalExpression')){
+
+		visitor.visitConditionalExpression(AST);
+		accept(AST.test,visitor);
+		accept(AST.consecuent,visitor);
+		accept(AST.alternate,visitor);
+
+	} else if(pred_is_a(AST,'ForStatement')){
+
+		visitor.visitForStatement(AST);
+		accept(AST.init, visitor);
+		accept(AST.test, visitor);
+		accept(AST.update, visitor);
+		accept(AST.body, visitor);
+
+	} else if(pred_is_a(AST,'UnaryExpression')){
+
+		visitor.visitUnaryExpression(AST);
+		accept(AST.argument, visitor);
+
+	} else if(pred_is_a(AST,'ArrayExpression')){
+
+		visitor.visitArrayExpression(AST);
+		for(var key in AST.elements){
+			var element = AST.elements[key];
+			accept(element, visitor);
+		}
+
+	} else if(pred_is_a(AST,'WhileStatement')){
+
+		visitor.visitWhileStatement(AST);
+		accept(AST.test, visitor);
+		accept(AST.body, visitor);
+
+	} else if(pred_is_a(AST,'SwitchStatement')){
+
+		visitor.visitSwitchStatement(AST);
+		accept(AST.discriminant, visitor);
+		for(var key in AST.cases){
+			var case_ = AST.cases[key];
+			accept(case_, visitor);
+		}
+
+	} else if(pred_is_a(AST,'SwitchCase')){
+
+		visitor.visitSwitchCase(AST);
+		accept(AST.test, visitor);
+		for(var key in AST.consecuent){
+			var con = AST.consecuent[key];
+			accept(AST.con, visitor);
+		}
+
+	} else if(pred_is_a(AST,'SequenceExpression')){
+
+		visitor.visitSequenceExpression(AST);
+		for(var key  in AST.expressions){
+			var expression = AST.expressions[key];
+			accept(expression, visitor);
+		}
+
+	} else if(pred_is_a(AST,'LabeledStatement')){
+
+		visitor.visitLabeledStatement(AST);
+		accept(AST.label, visitor);
+		accept(AST.body, visitor);
+
 	} else {
 
 		// Default case when a predicate is missing
@@ -241,4 +316,32 @@ var ASTVisitor = function ASTVisitor(){
 
 	this.visitThisExpression = function visitThisExpression(AST){}
 
+	this.visitIfStatement = function visitIfStatement(AST){}
+
+	this.visitUnaryExpression = function visitUnaryExpression(AST){}
+
+	this.visitConditionalExpression = function visitConditionalExpression(AST){}
+
+	this.visitForStatement = function visitForStatement(AST){}
+
+	this.visitArrayExpression = function visitArrayExpression(AST){}
+
+	this.visitWhileStatement = function visitWhileStatement(AST){}
+
+	this.visitSwitchStatement = function visitSwitchStatement(AST){}
+
+	this.visitSwitchCase = function visitSwitchCase(AST){}
+
+	this.visitSequenceExpression = function visitSequenceExpression(AST){}
+
+	this.visitLabeledStatement = function visitLabeledStatement(AST){}
+
+}
+
+
+function hola(x){
+	switch(x):
+		case "hola" return 1;
+		case "holo" return 2;
+	return 3;
 }
