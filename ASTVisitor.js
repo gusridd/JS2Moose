@@ -178,7 +178,6 @@ var accept = function accept(AST, visitor){
 
 		visitor.visitIfStatement(AST);
 		accept(AST.test,visitor);
-		console.log(AST.consecuent);
 		accept(AST.consecuent,visitor);
 		accept(AST.alternate,visitor);
 
