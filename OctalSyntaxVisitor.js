@@ -11,8 +11,8 @@ var octal_regex = new RegExp("0[0-7]+");
 var OctalSyntaxVisitor = function OctalSyntaxVisitor() {
 
 	this.visitLiteral = function visitLiteral(AST){
-
-		if(octal_regex.exec(AST.raw)){
+		var match = octal_regex.exec(AST.raw)
+		if(match && match[0] == AST.raw){
 			// The problem is registered into the corresponding famix object
 			var context = this.getContext();
 			context.famix.use_strict_static_problems.push({description:"octal syntax", loc: AST.loc, range: AST.range});

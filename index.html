@@ -149,12 +149,14 @@ f(); // throws a TypeError
 
 
 
-		<h2>Summary</h2>
-		<ul id="function_names">
-
-		</ul>
+		<h2>Generated MSE</h2>
 
 		<textarea id="mse_content"></textarea>
+	</div>
+
+	<div>
+		<h2>'use strict' problem summary</h2>
+		<ul id="use_strict"></ul>
 	</div>
 
 	<script type="text/javascript">
@@ -165,9 +167,7 @@ f(); // throws a TypeError
 			var code = $('#input').val().trim();
 			$('#mse_content').html(getMSE(code));
 
-			// var strictVisitor = new StrictVisitor();
-			// accept(t,strictVisitor);
-
+			// Use strict
 			var dupPropertyVisitor = new DuplicatePropertyVisitor();
 			accept(t,dupPropertyVisitor);
 
@@ -185,6 +185,17 @@ f(); // throws a TypeError
 
 			var calleeVisitor = new CalleeVisitor();
 			accept(t,calleeVisitor);
+
+			var strictVisitor = new StrictVisitor();
+			accept(t,strictVisitor);
+
+			var use_strict_problems = strictVisitor.getUseStrictProblems();
+
+			var $ul = $('#use_strict');
+			$.each(use_strict_problems, function(i,el){
+				var $span = $('<span/>').text('\nline: ' + el.loc.start.line + '\ncolumn: ' + el.loc.start.column+ ':\t ');
+				var $li = $('<li/>').text(el.description).appendTo($ul).prepend($span);
+			});
 
 		});		
 		

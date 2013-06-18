@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>use strict</title>
+
+	<script src="jquery-1.9.1.js"></script>
+	<script src="esprima.js"></script>
+	<script src="escodegen.browser.js"></script>
+	<script src="esmorph.js"></script>
+
+	<script type="text/javascript" src="FAMIX.js"></script>
+	<script type="text/javascript" src="ASTVisitor.js"></script>
+	<script type="text/javascript" src="DuplicatePropertyVisitor.js"></script>
+	<script type="text/javascript" src="DuplicateParameterVisitor.js"></script>
+	<script type="text/javascript" src="KeywordsVisitor.js"></script>
+	<script type="text/javascript" src="WithVisitor.js"></script>
+	<script type="text/javascript" src="OctalSyntaxVisitor.js"></script>
+	<script type="text/javascript" src="CalleeVisitor.js"></script>
+	<script type="text/javascript" src="ScopeVisitor.js"></script>
+	<script type="text/javascript" src="StrictVisitor.js"></script>
+	<script type="text/javascript" src="checkInterface.js"></script>
+	<script src="js2mse.js"></script>
+
+	<script type="text/javascript">
+
+	$(document).ready(function(){
+
+		$('#getmse').click(function(){
+			var code = $('#input').val().trim();
+			$('#mse_content').html(getMSE(code));
+
+			// var strictVisitor = new StrictVisitor();
+			// accept(t,strictVisitor);
+
+			var dupPropertyVisitor = new DuplicatePropertyVisitor();
+			accept(t,dupPropertyVisitor);
+
+			var dupParameterVisitor = new DuplicateParameterVisitor();
+			accept(t,dupParameterVisitor);
+
+			var withVisitor = new WithVisitor();
+			accept(t,withVisitor);
+
+			var keywordsVisitor = new KeywordsVisitor();
+			accept(t,keywordsVisitor);
+
+			var octalVisitor = new OctalSyntaxVisitor();
+			accept(t,octalVisitor);
+
+			var calleeVisitor = new CalleeVisitor();
+			accept(t,calleeVisitor);
+
+		});		
+		
+	});
+	
+	</script>
+
+	<style type="text/css">
+		textarea{
+			width: 500px;
+			height: 300px;
+		}
+	</style>
+
+
+	<body>
+<textarea id="input"></textarea>
+
+
+	</body>
+</head>
