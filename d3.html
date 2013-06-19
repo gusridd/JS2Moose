@@ -7,6 +7,10 @@
 	<title>d3</title>
 
 	<script src="jquery-1.9.1.js"></script>
+
+	<link rel="stylesheet" href="lib/highlight/styles/tomorrow-night.css">
+	<script src="lib/highlight/highlight.pack.js"></script>
+
 	<script src="esprima.js"></script>
 	<script src="http://d3js.org/d3.v3.min.js"></script>
 	<script type="text/javascript" src="ASTVisitor.js"></script>
@@ -64,6 +68,8 @@ text {
 
 	$(document).ready(function(){
 
+		$code_out = $('#code_out');
+
 		$('#do').click(function(){
 			var code = $('#input').val().trim();
 			
@@ -76,6 +82,10 @@ text {
 			// console.log(result);
 			// $('#result').html(JSON.stringify(result));
 
+			$code_out.html(code);
+
+			$code_out.each(function(i, e) {hljs.highlightBlock(e)});
+
 			var diameter = 960,
 			    format = d3.format(",d");
 
@@ -83,7 +93,7 @@ text {
 			    .size([diameter - 4, diameter - 4])
 			    .value(function(d) { return d.size; });
 
-			var svg = d3.select("body").append("svg")
+			var svg = d3.select("#graph").append("svg")
 			    .attr("width", diameter)
 			    .attr("height", diameter)
 			  .append("g")
@@ -130,16 +140,14 @@ text {
 
 <body>
 
-
-
 <button id="do">DO!</button>
 <div id="result"></div>
 
-<textarea id="input">
+<textarea id="input"></textarea>
 
+<div id="graph"></div>
 
-</textarea>
-
+<pre><code id="code_out"></code></pre>
 
 </body>
 </html>
