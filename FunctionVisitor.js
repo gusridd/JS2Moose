@@ -26,6 +26,7 @@ var FunctionVisitor = function FunctionVisitor(){
 			var obj = {};
 			obj.name = (AST.id === null || AST.id === undefined) ? 'anon' : AST.id.name ;
 			obj.size = AST.range[1] - AST.range[0];
+			obj.AST = AST;
 			if(AST.functions != undefined){
 				obj.children = [];
 				for(var k in AST.functions){

@@ -12,6 +12,7 @@
 	<script src="lib/highlight/highlight.pack.js"></script>
 
 	<script src="esprima.js"></script>
+	<script src="escodegen.browser.js"></script>
 	<script src="http://d3js.org/d3.v3.min.js"></script>
 	<script type="text/javascript" src="ASTVisitor.js"></script>
 	<script type="text/javascript" src="FunctionVisitor.js"></script>
@@ -78,13 +79,6 @@ text {
 			var functionVisitor = new FunctionVisitor();
 			accept(ast,functionVisitor);
 			var result = functionVisitor.getFunctionJSON()
-			// console.log(ast);
-			// console.log(result);
-			// $('#result').html(JSON.stringify(result));
-
-			$code_out.html(code);
-
-			$code_out.each(function(i, e) {hljs.highlightBlock(e)});
 
 			var diameter = 960,
 			    format = d3.format(",d");
@@ -115,7 +109,10 @@ text {
 			      .text(function(d) { return d.name + (d.children ? "" : ": " + format(d.size)); });
 
 			  node.append("circle")
-			      .attr("r", function(d) { return d.r; });
+			      .attr("r", function(d) { return d.r; }).on('click', function(d){
+			      		$code_out.html(escodegen.generate(d.AST));
+			      		$code_out.each(function(i, e) {hljs.highlightBlock(e)}); 
+			      	});
 
 			  node.filter(function(d) { return !d.children; }).append("text")
 			      .attr("dy", ".3em")
