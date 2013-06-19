@@ -1,0 +1,41 @@
+body{
+	background: #EEE;
+	color: #333333;
+	font: 13px Helvetica, arial, freesans, clean, sans-serif;
+	line-height: 1.4;
+}
+
+h1{
+	text-align: center;
+}
+
+.step{
+	padding: 3px;
+	background: #EEE;
+	color: #333333;
+	font: 13px Helvetica, arial, freesans, clean, sans-serif;
+	line-height: 1.4;
+	-webkit-border-radius: 4px;
+			border-radius: 4px;
+}
+
+.step h2{
+	font-size: 16px;
+	line-height: 20px;
+	font-weight: bold;
+	padding: 10px 10px;
+	color: #555;
+	text-shadow: 0 1px 0 #fff;
+	display: block;
+	border: 1px solid #CACACA;
+	border-bottom: 0 none;
+	background-color: #eaeaea;
+	margin-bottom: 0;
+}
+
+.step > div{
+	border: 1px solid #CACACA;
+	padding: 30px;
+	background-color: #fff;
+	margin-top: 0;
+}

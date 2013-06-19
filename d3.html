@@ -11,6 +11,8 @@
 	<link rel="stylesheet" href="lib/highlight/styles/tomorrow-night.css">
 	<script src="lib/highlight/highlight.pack.js"></script>
 
+
+	<link rel="stylesheet" href="css/d3.css">
 	<script src="esprima.js"></script>
 	<script src="escodegen.browser.js"></script>
 	<script src="http://d3js.org/d3.v3.min.js"></script>
@@ -129,22 +131,34 @@ text {
 	
 	</script>
 
-	<script>
-
-
-
-</script>
-
 <body>
 
-<button id="do">DO!</button>
-<div id="result"></div>
+<h1>JavaScript visualization</h1>
 
-<textarea id="input"></textarea>
+<div class="step">
+	<h2>Step 1</h2>
+	<div>
+		<p>Paste your code here:</p>
+		<textarea id="input"></textarea>
+	</div>
+</div>
 
-<div id="graph"></div>
+<div class="step">
+	<h2>Step 2</h2>
+	<div>
+		<p>Click this nice button</p>
+		<button id="do">Nice Button</button>
+	</div>
+</div>
 
-<pre><code id="code_out"></code></pre>
+<div class="step">
+	<h2>Step 3</h2>
+	<div>
+		<p>Visualize your code. You can click on the circles to get more info at bottom</p>
+		<div id="graph"></div>
+		<pre><code id="code_out"></code></pre>
+	</div>
+</div>
 
 </body>
 </html>
